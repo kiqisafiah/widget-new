@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget Statistik Kunjungan</title>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KS6811L339"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-KS6811L339');
+    </script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="icon" id="infoIcon" onclick="toggleWidget()">
+        <img src="blangkon_2.png" alt="Icon" class="icon-image">
+    </div>
+    
+    <div class="widget" id="infoWidget" style="display: none;">
+        <div class="close-btn" onclick="closeWidget()">
+            <span>X</span>
+        </div>
+        <div class="widget-header">
+            STATISTIKA KUNJUNGAN
+            <br><p class="widget-description">Perhitungan jumlah kunjungan website</p>
+        </div>
+
+        <div class="widget-header">
+            <img src="user.png" alt="User Icon" class="user-icon">
+            <p class="widget-description">Total visitor</p>
+            <p class="widget-description-dua" id="totalVisitorCount">0</p>
+            <p><strong id="totalVisitor">🟢 Online: 0</strong></p>
+        </div>
+    
+        <div class="widget-header">
+            <img src="diagram.webp" alt="Diagram Icon" class="user-icon">
+            <p class="widget-description">Total view</p>
+            <p class="widget-description-dua" id="totalViewCount">0</p>  
+        </div>
+        
+    </div>
+
+    <script>
+        // Fungsi untuk membuka dan menutup widget
+        function toggleWidget() {
+            const widget = document.getElementById('infoWidget');
+            widget.style.display = (widget.style.display === 'none' || widget.style.display === '') ? 'block' : 'none';
+        }
+
+        function closeWidget() {
+            document.getElementById('infoWidget').style.display = 'none';
+        }
+
+        // Fungsi untuk mengambil data dari Google Analytics
+        async function fetchAnalyticsData() {
+            const propertyId = 'G-KS6811L339'; // Ganti dengan ID properti Anda
+            const apiKey = 'AIzaSyBpC7gPTSWpmE-EKz61ShTvYUkPN01lnA8'; // Ganti dengan API Key Anda
+
+            const url = `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport?key=${apiKey}`;
+    
+            const requestBody = {
+                "dateRanges": [{ "startDate": "30daysAgo", "endDate": "today" }],
+                "metrics": [{ "name": "activeUsers" }, { "name": "screenPageViews" }]
+            };
+    
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+    
+                const data = await response.json();
+                console.log(data); // Debugging: Tampilkan data di konsol
+    
+                if (data.rows && data.rows.length > 0) {
+                    const activeUsers = data.rows[0].metricValues[0].value || 0; // Default ke 0 jika tidak ada nilai
+                    const pageViews = data.rows[0].metricValues[1].value || 0; // Default ke 0 jika tidak ada nilai
+
+                    // Update elemen HTML
+                    document.getElementById('totalVisitorCount').innerText = activeUsers;
+                    document.getElementById('totalViewCount').innerText = pageViews;
+                    document.getElementById('totalVisitor').innerText = `🟢 Online: ${activeUsers}`;
+                } else {
+                    console.log('No data available for the selected date range.');
+                }
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                alert('Terjadi kesalahan saat mengambil data. Silakan coba lagi nanti.');
+            }
+        }
+    
+        // Memperbarui data setiap 5 menit
+        setInterval(fetchAnalyticsData, 300000); // 300000 ms = 5 menit
+
+        // Panggil fungsi untuk mengambil data saat halaman dimuat
+        window.onload = fetchAnalyticsData;
+    </script>
+
+</body>
+</html>
